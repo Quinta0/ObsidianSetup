@@ -31,35 +31,6 @@ install_obsidian_macos() {
     sudo ln -sf /Applications/Obsidian.app/Contents/MacOS/Obsidian /usr/local/bin/obsidian
 }
 
-install_obsidian_windows() {
-    echo "Installing Obsidian for Windows..."
-    choco -v
-    if [[ $? != 0 ]] ; then
-        @powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
-    fi
-    choco install -y wget jq
-
-    echo "Downloading Obsidian installer..."
-    wget https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.3/Obsidian.1.6.3.exe -O ObsidianInstaller.exe
-
-    # Check if the installer was downloaded
-    if [ -f "ObsidianInstaller.exe" ]; then
-        echo "Running Obsidian installer..."
-        start /wait ObsidianInstaller.exe /S
-
-        # Check if Obsidian was installed and create a symbolic link for testing
-        if [ -f "/c/Program Files/Obsidian/Obsidian.exe" ]; then
-            ln -sf "/c/Program Files/Obsidian/Obsidian.exe" /usr/local/bin/obsidian
-        else
-            echo "Obsidian installation failed."
-            exit 1
-        fi
-    else
-        echo "Failed to download Obsidian installer."
-        exit 1
-    fi
-}
-
 install_plugins() {
     echo "Installing plugins..."
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
@@ -105,7 +76,7 @@ read -p "Enter your choice: " os_choice
 case "$os_choice" in
     [Ll]) install_obsidian_linux ;;
     [Mm]) install_obsidian_macos ;;
-    [Ww]) install_obsidian_windows ;;
+    [Ww]) echo "Please run the script install_obsidian.ps1 in PowerShell for Windows installation." ;;
     *) echo "Invalid choice. Exiting." ;;
 esac
 
