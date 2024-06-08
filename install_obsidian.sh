@@ -1,6 +1,7 @@
 #!/bin/bash
 
 install_obsidian_linux() {
+    echo "Installing Obsidian for Linux..."
     sudo apt update
     sudo apt install -y wget jq
 
@@ -13,6 +14,7 @@ install_obsidian_linux() {
 }
 
 install_obsidian_macos() {
+    echo "Installing Obsidian for macOS..."
     which -s brew
     if [[ $? != 0 ]] ; then
         /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
@@ -30,16 +32,19 @@ install_obsidian_macos() {
 }
 
 install_obsidian_windows() {
+    echo "Installing Obsidian for Windows..."
     choco -v
     if [[ $? != 0 ]] ; then
         @powershell -NoProfile -ExecutionPolicy Bypass -Command "iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
     fi
     choco install -y wget jq
 
+    echo "Downloading Obsidian installer..."
     wget https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.3/Obsidian.1.6.3.exe -O ObsidianInstaller.exe
 
     # Check if the installer was downloaded
     if [ -f "ObsidianInstaller.exe" ]; then
+        echo "Running Obsidian installer..."
         start /wait ObsidianInstaller.exe /S
 
         # Check if Obsidian was installed and create a symbolic link for testing
@@ -56,6 +61,7 @@ install_obsidian_windows() {
 }
 
 install_plugins() {
+    echo "Installing plugins..."
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
         pkill Obsidian
     elif [[ "$OSTYPE" == "darwin"* ]]; then
@@ -89,11 +95,18 @@ install_plugins() {
     echo "Plugins installed successfully!"
 }
 
-case "$(uname -s)" in
-    Linux*)     install_obsidian_linux ;;
-    Darwin*)    install_obsidian_macos ;;
-    CYGWIN*|MINGW32*|MSYS*|MINGW*) install_obsidian_windows ;;
-    *)          echo "Unknown OS" ;;
+echo "Please select your operating system:"
+echo "L) Linux"
+echo "M) macOS"
+echo "W) Windows"
+
+read -p "Enter your choice: " os_choice
+
+case "$os_choice" in
+    [Ll]) install_obsidian_linux ;;
+    [Mm]) install_obsidian_macos ;;
+    [Ww]) install_obsidian_windows ;;
+    *) echo "Invalid choice. Exiting." ;;
 esac
 
 install_plugins
