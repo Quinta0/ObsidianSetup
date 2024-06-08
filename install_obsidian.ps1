@@ -1,5 +1,10 @@
 # PowerShell script to install Obsidian and configure plugins on Windows
 
+function Test-Administrator {
+    $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+    return $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
+
 function Install-Obsidian-Windows {
     Write-Output "Installing Obsidian for Windows..."
     if (-Not (Get-Command choco -ErrorAction SilentlyContinue)) {
@@ -64,6 +69,12 @@ function Install-Plugins {
     }
 
     Write-Output "Plugins installed successfully."
+}
+
+if (-Not (Test-Administrator)) {
+    Write-Output "This script needs to be run as an administrator. Re-launching with elevated privileges..."
+    Start-Process -FilePath "powershell.exe" -ArgumentList "-NoProfile -ExecutionPolicy Bypass -File `"$PSCommandPath`"" -Verb RunAs
+    exit
 }
 
 # Directly run Windows installation and plugin configuration
