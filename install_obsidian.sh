@@ -37,13 +37,20 @@ install_obsidian_windows() {
     choco install -y wget jq
 
     wget https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.3/Obsidian.1.6.3.exe -O ObsidianInstaller.exe
-    start /wait ObsidianInstaller.exe /S
 
-    # Check if Obsidian was installed and create a symbolic link for testing
-    if [ -f "/c/Program Files/Obsidian/Obsidian.exe" ]; then
-        ln -sf "/c/Program Files/Obsidian/Obsidian.exe" /usr/local/bin/obsidian
+    # Check if the installer was downloaded
+    if [ -f "ObsidianInstaller.exe" ]; then
+        start /wait ObsidianInstaller.exe /S
+
+        # Check if Obsidian was installed and create a symbolic link for testing
+        if [ -f "/c/Program Files/Obsidian/Obsidian.exe" ]; then
+            ln -sf "/c/Program Files/Obsidian/Obsidian.exe" /usr/local/bin/obsidian
+        else
+            echo "Obsidian installation failed."
+            exit 1
+        fi
     else
-        echo "Obsidian installation failed."
+        echo "Failed to download Obsidian installer."
         exit 1
     fi
 }
