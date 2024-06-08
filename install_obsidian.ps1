@@ -1,4 +1,4 @@
-# PowerShell script to install Obsidian and configure plugins
+# PowerShell script to install Obsidian and configure plugins on Windows
 
 function Install-Obsidian-Windows {
     Write-Output "Installing Obsidian for Windows..."
@@ -66,26 +66,6 @@ function Install-Plugins {
     Write-Output "Plugins installed successfully."
 }
 
-Write-Output "Please select your operating system:"
-Write-Output "L) Linux"
-Write-Output "M) macOS"
-Write-Output "W) Windows"
-
-$osChoice = Read-Host "Enter your choice"
-
-switch ($osChoice.ToUpper()) {
-    "L" {
-        Write-Output "Please run the script install_obsidian.sh on Linux."
-    }
-    "M" {
-        Write-Output "Please run the script install_obsidian.sh on macOS."
-    }
-    "W" {
-        Install-Obsidian-Windows
-        Install-Plugins
-    }
-    default {
-        Write-Output "Invalid choice. Exiting."
-        exit 1
-    }
-}
+# Directly run Windows installation and plugin configuration
+Install-Obsidian-Windows
+Install-Plugins
