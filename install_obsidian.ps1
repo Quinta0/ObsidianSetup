@@ -9,23 +9,23 @@ function Install-Obsidian-Windows {
     Write-Output "Installing Obsidian for Windows..."
     if (-Not (Get-Command choco -ErrorAction SilentlyContinue)) {
         Write-Output "Chocolatey is not installed. Installing Chocolatey..."
-        Set-ExecutionPolicy Bypass -Scope Process -Force;
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
+        Set-ExecutionPolicy Bypass -Scope Process -Force
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
         $script = (New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')
         Invoke-Command -ScriptBlock ([ScriptBlock]::Create($script))
     }
-    choco install -y wget jq
+    choco install -y jq
 
     Write-Output "Downloading Obsidian installer..."
-    wget https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.3/Obsidian.1.6.3.exe -OutFile ObsidianInstaller.exe
+    Invoke-WebRequest -Uri "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.3/Obsidian.1.6.3.exe" -OutFile "ObsidianInstaller.exe"
 
     # Check if the installer was downloaded
     if (Test-Path "ObsidianInstaller.exe") {
         Write-Output "Running Obsidian installer..."
-        Start-Process -FilePath .\ObsidianInstaller.exe -ArgumentList "/S" -NoNewWindow -Wait
+        Start-Process -FilePath .\ObsidianInstaller.exe -ArgumentList "/S" -Wait
 
-        # Check if Obsidian was installed and create a symbolic link for testing
-        if (Test-Path "C:\Program Files\Obsidian\Obsidian.exe") {
+        # Check if Obsidian was installed
+        if (Test-Path "C:\Program Files\Obsidian\Obsidian.exe" -or Test-Path "$env:LOCALAPPDATA\Obsidian\Obsidian.exe") {
             Write-Output "Obsidian installed successfully."
         } else {
             Write-Output "Obsidian installation failed."
