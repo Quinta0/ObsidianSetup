@@ -6,7 +6,6 @@ This repository contains scripts to automatically install Obsidian and configure
 
 - `install_obsidian.sh`: Script to install Obsidian and configure plugins on Linux and macOS.
 - `install_obsidian.ps1`: Script to install Obsidian and configure plugins on Windows.
-- `test_install_obsidian.sh`: Script to test if Obsidian and the plugins are installed correctly.
 - `plugins.json`: Configuration file listing the core and community plugins to be installed.
 
 ## Prerequisites
