@@ -1,4 +1,8 @@
-# Test-ObsidianInstallation.ps1
+# Define Test-Administrator function
+function Test-Administrator {
+    $currentPrincipal = New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())
+    return $currentPrincipal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+}
 
 function Test-AdminPrivilege {
     if (-Not (Test-Administrator)) {
@@ -26,7 +30,11 @@ function Test-ObsidianDownload {
     Start-Sleep -Seconds 5
 
     Write-Output "Downloading Obsidian installer..."
-    wget https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.3/Obsidian.1.6.3.exe -OutFile ObsidianInstaller.exe
+    try {
+        Invoke-WebRequest -Uri "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.3/Obsidian.1.6.3.exe" -OutFile "ObsidianInstaller.exe" -ErrorAction Stop
+    } catch {
+        Write-Output "Download failed as expected."
+    }
 
     if (Test-Path "ObsidianInstaller.exe") {
         Write-Output "Download succeeded unexpectedly."
@@ -49,7 +57,7 @@ Set-Content -Path "invalid_plugins.json" -Value @"
 function Test-InvalidPluginConfig {
     Write-Output "Testing with invalid plugins.json..."
     try {
-        $pluginsConfig = Get-Content -Raw -Path "invalid_plugins.json" | ConvertFrom-Json
+        $null = Get-Content -Raw -Path "invalid_plugins.json" | ConvertFrom-Json
     } catch {
         Write-Output "Caught error parsing invalid plugins.json as expected: $_"
     }
