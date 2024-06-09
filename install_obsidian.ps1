@@ -11,7 +11,8 @@ function Install-Obsidian-Windows {
         Write-Output "Chocolatey is not installed. Installing Chocolatey..."
         Set-ExecutionPolicy Bypass -Scope Process -Force;
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
-        iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'));
+        $script = (New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')
+        Invoke-Command -ScriptBlock ([ScriptBlock]::Create($script))
     }
     choco install -y wget jq
 
@@ -36,7 +37,7 @@ function Install-Obsidian-Windows {
     }
 }
 
-function Install-Plugins {
+function Install-Plugin {
     Write-Output "Installing plugins..."
 
     # Kill Obsidian process if running
@@ -79,4 +80,4 @@ if (-Not (Test-Administrator)) {
 
 # Directly run Windows installation and plugin configuration
 Install-Obsidian-Windows
-Install-Plugins
+Install-Plugin
