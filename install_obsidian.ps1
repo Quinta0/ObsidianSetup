@@ -9,8 +9,8 @@ function Install-Obsidian-Windows {
     Write-Output "Installing Obsidian for Windows..."
     if (-Not (Get-Command choco -ErrorAction SilentlyContinue)) {
         Write-Output "Chocolatey is not installed. Installing Chocolatey..."
-        Set-ExecutionPolicy Bypass -Scope Process -Force
-        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072
+        Set-ExecutionPolicy Bypass -Scope Process -Force;
+        [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072;
         $script = (New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1')
         Invoke-Command -ScriptBlock ([ScriptBlock]::Create($script))
     }
@@ -22,10 +22,26 @@ function Install-Obsidian-Windows {
     # Check if the installer was downloaded
     if (Test-Path "ObsidianInstaller.exe") {
         Write-Output "Running Obsidian installer..."
-        Start-Process -FilePath .\ObsidianInstaller.exe -ArgumentList "/S" -Wait
+        $startProcess = Start-Process -FilePath .\ObsidianInstaller.exe -ArgumentList "/S" -PassThru -Wait
+        Write-Output "Installer exit code: $($startProcess.ExitCode)"
 
-        # Check if Obsidian was installed
-        if (Test-Path "C:\Program Files\Obsidian\Obsidian.exe" -or Test-Path "$env:LOCALAPPDATA\Obsidian\Obsidian.exe") {
+        # Check for Obsidian executable in possible installation paths
+        $obsidianPaths = @(
+            "C:\Program Files\Obsidian\Obsidian.exe",
+            "$env:LOCALAPPDATA\Programs\Obsidian\Obsidian.exe",
+            "$env:LOCALAPPDATA\Obsidian\Obsidian.exe"
+        )
+
+        $obsidianInstalled = $false
+        foreach ($path in $obsidianPaths) {
+            if (Test-Path $path) {
+                $obsidianInstalled = $true
+                Write-Output "Obsidian found at $path"
+                break
+            }
+        }
+
+        if ($obsidianInstalled) {
             Write-Output "Obsidian installed successfully."
         } else {
             Write-Output "Obsidian installation failed."
