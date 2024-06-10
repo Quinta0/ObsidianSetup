@@ -94,3 +94,6 @@ If the plugins are not enabled or installed:
 
 ## License
 This project is licensed under the MIT License.
+
+## Thanks for the stars
+[![Stargazers repo roster for @Quinta0/ObsidianSetup](https://reporoster.com/stars/dark/Quinta0/ObsidianSetup)](https://github.com/Quinta0/ObsidianSetup/stargazers)
