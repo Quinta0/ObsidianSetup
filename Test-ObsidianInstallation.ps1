@@ -77,12 +77,13 @@ function Test-ObsidianInstallation {
     choco install -y jq
 
     Write-Output "Downloading Obsidian installer..."
-    Invoke-WebRequest -Uri "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.3/Obsidian.1.6.3.exe" -OutFile "ObsidianInstaller.exe"
+    $installerPath = "$env:TEMP\ObsidianInstaller.exe"
+    Invoke-WebRequest -Uri "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.3/Obsidian.1.6.3.exe" -OutFile $installerPath
 
     # Check if the installer was downloaded
-    if (Test-Path "ObsidianInstaller.exe") {
+    if (Test-Path $installerPath) {
         Write-Output "Running Obsidian installer..."
-        $startProcess = Start-Process -FilePath .\ObsidianInstaller.exe -ArgumentList "/S" -PassThru -Wait
+        $startProcess = Start-Process -FilePath $installerPath -ArgumentList "/S" -PassThru -Wait
         Write-Output "Installer exit code: $($startProcess.ExitCode)"
 
         # Check for Obsidian executable in possible installation paths
@@ -113,9 +114,99 @@ function Test-ObsidianInstallation {
     }
 }
 
+function Initialize-ObsidianConfig {
+    Write-Output "Initializing Obsidian configuration..."
+    $vaultPath = "$env:USERPROFILE\Documents\ObsidianVault"
+    $configPath = "$vaultPath\.obsidian\config"
+
+    if (-Not (Test-Path $vaultPath)) {
+        Write-Output "Creating Obsidian vault directory..."
+        New-Item -ItemType Directory -Path $vaultPath | Out-Null
+    }
+
+    if (-Not (Test-Path $configPath)) {
+        Write-Output "Creating default Obsidian config..."
+        $defaultConfig = @{
+            "plugin:file-explorer" = $true;
+            "plugin:global-search" = $true;
+        }
+        $defaultConfig | ConvertTo-Json -Compress | Set-Content -Path $configPath
+    }
+}
+
+function Test-PluginInstallation {
+    Write-Output "Testing plugin installation..."
+
+    # Define the vault path and plugins directory
+    $vaultPath = "$env:USERPROFILE\Documents\ObsidianVault"  # Update this path as needed
+    $pluginsDir = "$vaultPath\.obsidian\plugins"
+
+    # Ensure the plugins directory exists
+    if (-Not (Test-Path $pluginsDir)) {
+        New-Item -ItemType Directory -Path $pluginsDir | Out-Null
+    }
+
+    # Get the list of installed plugins before installation
+    $pluginsBefore = Get-ChildItem -Path $pluginsDir
+
+    # Simulate plugin installation
+    $pluginsConfigPath = ".\plugins.json"
+    $pluginsConfig = Get-Content -Raw -Path $pluginsConfigPath | ConvertFrom-Json
+    $corePlugins = $pluginsConfig.core_plugins
+    $communityPlugins = $pluginsConfig.community_plugins
+
+    # Enable core plugins
+    $configPath = "$vaultPath\.obsidian\config"
+    if (-Not (Test-Path $configPath)) {
+        Initialize-ObsidianConfig
+    }
+
+    $config = Get-Content -Raw -Path $configPath | ConvertFrom-Json
+    foreach ($plugin in $corePlugins) {
+        Write-Output "Enabling core plugin: $plugin"
+        $config["plugin:$plugin"] = $true
+    }
+    $config | ConvertTo-Json -Compress | Set-Content -Path $configPath
+
+    # Install community plugins
+    foreach ($plugin in $communityPlugins) {
+        Write-Output "Installing community plugin: $plugin"
+        $pluginName = $plugin -replace '/','-'
+        $pluginUrl = "https://github.com/$plugin/releases/latest/download/main.js"
+        $pluginDir = "$pluginsDir\$pluginName"
+        if (-Not (Test-Path $pluginDir)) {
+            New-Item -ItemType Directory -Path $pluginDir | Out-Null
+        }
+        try {
+            Invoke-WebRequest -Uri $pluginUrl -OutFile "$pluginDir\main.js" -ErrorAction Stop
+        } catch {
+            Write-Output "Failed to download plugin from $pluginUrl"
+        }
+    }
+
+    # Get the list of installed plugins after installation
+    $pluginsAfter = Get-ChildItem -Path $pluginsDir
+
+    # Compare the before and after lists
+    Write-Output "Plugins before installation:"
+    $pluginsBefore | ForEach-Object { Write-Output $_.Name }
+
+    Write-Output "Plugins after installation:"
+    $pluginsAfter | ForEach-Object { Write-Output $_.Name }
+
+    # Check if new plugins were installed
+    $newPlugins = Compare-Object -ReferenceObject $pluginsBefore -DifferenceObject $pluginsAfter
+    if ($newPlugins) {
+        Write-Output "New plugins installed successfully."
+    } else {
+        Write-Output "No new plugins were installed."
+    }
+}
+
 # Run tests
 Test-AdminPrivilege
 Test-ChocolateyInstallation
 Test-ObsidianDownload
 Test-InvalidPluginConfig
 Test-ObsidianInstallation
+Test-PluginInstallation

@@ -9,6 +9,10 @@ install_obsidian_linux() {
     chmod +x obsidian.AppImage
     ./obsidian.AppImage &
 
+    # Wait a bit to ensure Obsidian initializes its config
+    sleep 10
+    pkill -f obsidian.AppImage
+
     # Simulate creating a command alias for testing
     sudo ln -sf $(pwd)/obsidian.AppImage /usr/local/bin/obsidian
 }
@@ -27,40 +31,50 @@ install_obsidian_macos() {
     hdiutil detach /Volumes/Obsidian
     open /Applications/Obsidian.app &
 
+    # Wait a bit to ensure Obsidian initializes its config
+    sleep 10
+    pkill Obsidian
+
     # Simulate creating a command alias for testing
     sudo ln -sf /Applications/Obsidian.app/Contents/MacOS/Obsidian /usr/local/bin/obsidian
 }
 
 install_plugins() {
     echo "Installing plugins..."
+
     if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        pkill Obsidian
+        pkill -f obsidian.AppImage
+        CONFIG_DIR="$HOME/.config/obsidian"
     elif [[ "$OSTYPE" == "darwin"* ]]; then
         pkill Obsidian
-    elif [[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
-        taskkill /IM Obsidian.exe /F
+        CONFIG_DIR="$HOME/Library/Application Support/obsidian"
     fi
 
-    if [[ "$OSTYPE" == "linux-gnu"* || "$OSTYPE" == "darwin"* ]]; then
-        mkdir -p ~/.config/obsidian/plugins
-    elif [[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
-        mkdir -p "$APPDATA\obsidian\plugins"
-    fi
+    mkdir -p "$CONFIG_DIR/plugins"
 
     PLUGINS_FILE=plugins.json
     CORE_PLUGINS=$(jq -r '.core_plugins[]' $PLUGINS_FILE)
     COMMUNITY_PLUGINS=$(jq -r '.community_plugins[]' $PLUGINS_FILE)
 
+    # Enable core plugins
+    CONFIG_FILE="$CONFIG_DIR/config"
+    if [[ ! -f "$CONFIG_FILE" ]]; then
+        echo "{}" > "$CONFIG_FILE"
+    fi
+
     for plugin in $CORE_PLUGINS; do
         echo "Enabling core plugin: $plugin"
-        # Simulate enabling core plugin by creating a file
-        touch "$HOME/.config/obsidian/plugins/$plugin"
+        jq ". + {\"plugin:$plugin\": true}" "$CONFIG_FILE" > tmp.json && mv tmp.json "$CONFIG_FILE"
     done
 
+    # Install community plugins
     for plugin in $COMMUNITY_PLUGINS; do
         echo "Installing community plugin: $plugin"
-        # Simulate installing community plugin by creating a directory
-        mkdir -p "$HOME/.config/obsidian/plugins/$plugin"
+        PLUGIN_NAME=$(echo $plugin | sed 's/\//-/g')
+        PLUGIN_URL="https://github.com/$plugin/releases/latest/download/main.js"
+        PLUGIN_DIR="$CONFIG_DIR/plugins/$PLUGIN_NAME"
+        mkdir -p "$PLUGIN_DIR"
+        wget "$PLUGIN_URL" -O "$PLUGIN_DIR/main.js" || echo "Failed to download plugin $plugin"
     done
 
     echo "Plugins installed successfully!"

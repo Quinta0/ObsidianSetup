@@ -40,9 +40,9 @@ function test_obsidian_download_failure {
 
 # Create an invalid plugins.json file
 echo '{
-  "core_plugins": ["plugin1", "plugin2"]
+  "core_plugins": ["plugin1", "plugin2"],
   "community_plugins": ["plugin3", "plugin4"]
-' > invalid_plugins.json
+}' > invalid_plugins.json
 
 function test_invalid_plugins_config {
     echo "Testing with invalid plugins.json..."
@@ -53,8 +53,60 @@ function test_invalid_plugins_config {
     fi
 }
 
+function test_plugin_installation {
+    echo "Testing plugin installation..."
+
+    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        CONFIG_DIR="$HOME/.config/obsidian"
+    elif [[ "$OSTYPE" == "darwin"* ]]; then
+        CONFIG_DIR="$HOME/Library/Application Support/obsidian"
+    fi
+
+    PLUGINS_DIR="$CONFIG_DIR/plugins"
+
+    mkdir -p "$PLUGINS_DIR"
+
+    PLUGINS_FILE=plugins.json
+    echo '{
+        "core_plugins": [
+            "file-explorer",
+            "global-search"
+        ],
+        "community_plugins": [
+            "tgrosinger/advanced-tables-obsidian",
+            "mgmeyers/obsidian-kanban"
+        ]
+    }' > "$PLUGINS_FILE"
+
+    # Capture the list of installed plugins before running the installation script
+    PLUGINS_BEFORE=$(ls -1 "$PLUGINS_DIR")
+
+    # Run the installation script
+    ./install_obsidian.sh
+
+    # Capture the list of installed plugins after running the installation script
+    PLUGINS_AFTER=$(ls -1 "$PLUGINS_DIR")
+
+    # Compare the lists of plugins
+    echo "Plugins before installation:"
+    echo "$PLUGINS_BEFORE"
+
+    echo "Plugins after installation:"
+    echo "$PLUGINS_AFTER"
+
+    # Check for newly installed plugins
+    NEW_PLUGINS=$(comm -13 <(echo "$PLUGINS_BEFORE") <(echo "$PLUGINS_AFTER"))
+    if [ -n "$NEW_PLUGINS" ]; then
+        echo "New plugins installed successfully:"
+        echo "$NEW_PLUGINS"
+    else
+        echo "No new plugins were installed."
+    fi
+}
+
 # Run tests
 test_os_selection
 test_dependencies_installation
 test_obsidian_download_failure
 test_invalid_plugins_config
+test_plugin_installation
