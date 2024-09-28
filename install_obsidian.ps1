@@ -17,7 +17,7 @@ function Install-Obsidian-Windows {
     choco install -y jq
 
     Write-Output "Downloading Obsidian installer..."
-    Invoke-WebRequest -Uri "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.3/Obsidian.1.6.5.exe" -OutFile "ObsidianInstaller.exe"
+    Invoke-WebRequest -Uri "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.3/Obsidian.1.6.7.exe" -OutFile "ObsidianInstaller.exe"
 
     # Check if the installer was downloaded
     if (Test-Path "ObsidianInstaller.exe") {
