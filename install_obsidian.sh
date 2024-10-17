@@ -5,7 +5,7 @@ install_obsidian_linux() {
     sudo apt update
     sudo apt install -y wget jq
 
-    wget https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.7/Obsidian-1.6.7.AppImage -O obsidian.AppImage
+    wget https://github.com/obsidianmd/obsidian-releases/releases/download/v1.7.4/Obsidian-1.7.4.AppImage -O obsidian.AppImage
     chmod +x obsidian.AppImage
     ./obsidian.AppImage &
 
@@ -21,7 +21,7 @@ install_obsidian_macos() {
     fi
     brew install wget jq
 
-    wget https://github.com/obsidianmd/obsidian-releases/releases/download/v1.6.7/Obsidian-1.6.7.dmg -O Obsidian.dmg
+    wget https://github.com/obsidianmd/obsidian-releases/releases/download/v1.7.4/Obsidian-1.7.4.dmg -O Obsidian.dmg
     hdiutil attach Obsidian.dmg
     cp -r /Volumes/Obsidian/Obsidian.app /Applications/
     hdiutil detach /Volumes/Obsidian
