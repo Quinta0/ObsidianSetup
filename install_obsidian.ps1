@@ -16,8 +16,12 @@ function Install-Obsidian-Windows {
     }
     choco install -y jq
 
-    Write-Output "Downloading Obsidian installer..."
-    Invoke-WebRequest -Uri "https://github.com/obsidianmd/obsidian-releases/releases/download/v1.7.4/Obsidian.1.7.4.exe" -OutFile "ObsidianInstaller.exe"
+    Write-Output "Checking latest Obsidian version..."
+    $version = (Invoke-RestMethod -Uri "https://api.github.com/repos/obsidianmd/obsidian-releases/releases/latest").tag_name
+    $versionNum = $version.TrimStart('v')
+
+    Write-Output "Downloading Obsidian installer ($version)..."
+    Invoke-WebRequest -Uri "https://github.com/obsidianmd/obsidian-releases/releases/download/$version/Obsidian-$versionNum.exe" -OutFile "ObsidianInstaller.exe"
 
     # Check if the installer was downloaded
     if (Test-Path "ObsidianInstaller.exe") {
