@@ -9,7 +9,6 @@ install_obsidian_linux() {
     chmod +x obsidian.AppImage
     ./obsidian.AppImage &
 
-    # Simulate creating a command alias for testing
     sudo ln -sf $(pwd)/obsidian.AppImage /usr/local/bin/obsidian
 }
 
@@ -27,15 +26,12 @@ install_obsidian_macos() {
     hdiutil detach /Volumes/Obsidian
     open /Applications/Obsidian.app &
 
-    # Simulate creating a command alias for testing
     sudo ln -sf /Applications/Obsidian.app/Contents/MacOS/Obsidian /usr/local/bin/obsidian
 }
 
 install_plugins() {
     echo "Installing plugins..."
-    if [[ "$OSTYPE" == "linux-gnu"* ]]; then
-        pkill Obsidian
-    elif [[ "$OSTYPE" == "darwin"* ]]; then
+    if [[ "$OSTYPE" == "linux-gnu"* || "$OSTYPE" == "darwin"* ]]; then
         pkill Obsidian
     elif [[ "$OSTYPE" == "cygwin" || "$OSTYPE" == "msys" || "$OSTYPE" == "win32" ]]; then
         taskkill /IM Obsidian.exe /F
@@ -74,10 +70,8 @@ echo "W) Windows"
 read -p "Enter your choice: " os_choice
 
 case "$os_choice" in
-    [Ll]) install_obsidian_linux ;;
-    [Mm]) install_obsidian_macos ;;
+    [Ll]) install_obsidian_linux; install_plugins ;;
+    [Mm]) install_obsidian_macos; install_plugins ;;
     [Ww]) echo "Please run the script install_obsidian.ps1 in PowerShell for Windows installation." ;;
     *) echo "Invalid choice. Exiting." ;;
 esac
-
-install_plugins
